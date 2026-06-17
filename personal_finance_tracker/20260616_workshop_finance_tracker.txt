@@ -1,0 +1,62 @@
+# Teil 13 Part 05 - Workshop: Erstellen eines Packages (Persönlicher Finanz-Tracker)
+# In diesem Workshop werden Sie einen einfachen persönlichen Finanz-Tracker entwicklen.
+# Dieses Programm hilft den benutzern, ihre persönlichen Finanzen zu verfolgen und zu analysieren.
+# Das Programm soll in mehrere Pakete und module eingeteilt werden - Zyklische Abhängigkeiten vermeiden!
+# Problem- und Funktionsdomäne
+# Der persönliche Finanz-Tracker besteht aus zwei Hauptkomponenten: Ausgabeverfolgung und Einkommensverfolgung.
+# Zusätzlich soll der Tracker Finanzberichte und Budgets generieren.
+## Schlüsselfunktionne:
+# 1. Ausgaben verfolgen: Einzelne Ausgaben aufzeichnen und kategorisieren
+# 2. Einkommen verfolgen: Verschiedene Einkommensquallen aufzeichnen und kategorisieren
+# 3. Berichte generieren: Zusammenfassungen von Finanzaktivitäten (Einnahmen/Ausgaben) erstellen
+# 4. Budgetanalyse: Überprüfen ob Ausgaben in einem Budget liegen
+# paket- und Modulstruktur
+## Das Programm soll in zwei Hauptpakete unterteilt werden: finance und analytics
+# Jedes Paket enhält spezifische Module, die mit ihren Funktionalitäten verbunden sind
+# 1. Paket finance
+#  - Modul: expenses: Klassen und Funktionen zum Hinzufügen, Kategorisieren ud Zusammenfassen von Ausgaben
+#  - Modul: income: Klassen und Funtkionen zum Aufzeichen und Kategorisieren von Einkommensquellen
+# 2. Paket: analytics (ein Unterpaket innerhalb von finance)
+#  - Modul: reporting: Funktionen zum Erstellen von Finanzberichten, basierend auf Einkommen und Ausgaben
+#  - Modul: budget: Klassen und Funktionen zum Erstellen und Analysieren von Budgets
+## Spezifikationen der Klassen und Funktionen
+# 1.Paket
+#   expenses
+#       Klasse Expense with attributes amount (float) and category (str)
+#       Funktion summarize_expenses(expenses: list[Expense]) -> dict[str, float]
+#       --> fasst Ausgaben nach Kategorien zusammen und berechnet die Gesamtsumme pro Kategorie
+#       Funktion total_expenses(expenses: list[Expense]) -> float
+#       --> berechnet die Gesamtausgaben 
+#   income
+#       Klasse Income with attributes amount (float) and source (str)
+#       Funktion summarize_incomes(incomes: list[Income]) -> dict[str, float]
+#       --> Fasst Einkommen nach Quellen zusammen und berechnet die Gesamtsumme pro Quelle
+#       Funktion total_income(incomes: list[Income]) -> float:
+#       --> Berechnet das Gesamteinkommen
+# 2. Paket
+#   analytics.reporting
+#       Funktion print_financial_report(incomes: list[Income]), expenses: list[Expense]) -> None
+#       Druckt folgende Infomationen aus:
+#           - Einnahmen pro Quelle
+#           - Ausgaben pro Kategorie
+#           - Gesamteinnahmen und -ausgaben
+#           - Überschuss oder Defizit 
+#   analytics.bugdet
+#       - Klasse Budget mit Attribut limit
+#       - Methode can_afford(expenses: list[Expense]) -> bool
+#       --> überprüft, ob die Gesamtausgaben innerhalb des Budgets liegen
+# Fügen Sie ein Modul main hinu, die die Funktionalität des Programms testet, indem Sie Listen von Einnahme und Ausgaben,
+# sowie ein Budget erstellt und überprüft ob die Ausgaben im Budget liegen und einen Finanzbericht generieren
+# Paketreferenzen und Abhängigkeiten
+#  Sie benötigen folgende Abhängigkeiten zwischen den Modulen:
+# 	- analytics.budget muss auf expenses zugreifen, um die Daten für die Budgetanalyse zu erhalten
+#  	- analytics.reporting muss auf income und expenses zugreifen, um die Finanzberichte zu erstellen
+#  	- main muss auf alle Module (income, expenses, analytics.budget, analytics.reporting) zugreifen
+# Hinweis: Die Abhängigkeit zwischen den Modulen dienen dazu, die verschieden Import-Möglichkeiten zu demonstrieren
+# Sie sind nicht unbedingt das beste Beispiel für die Organisation von Funktionalität in Python
+# Ausführen des Programms
+# - im Verzeichnis, in dem sich das finance Paket befindet, können Sie das Programm mit dem Befehl
+# python -m finance.main ausführen
+# !python -m finance.main # im Notebook
+# import finance.main # für Python-Interpreter
+# finance.main.main() 
