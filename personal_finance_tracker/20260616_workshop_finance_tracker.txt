@@ -43,9 +43,9 @@
 #           - Überschuss oder Defizit 
 #   analytics.bugdet
 #       - Klasse Budget mit Attribut limit
-#       - Methode can_afford(expenses: list[Expense]) -> bool
+#       - Methode is_limit(expenses: list[Expense]) -> bool
 #       --> überprüft, ob die Gesamtausgaben innerhalb des Budgets liegen
-# Fügen Sie ein Modul main hinu, die die Funktionalität des Programms testet, indem Sie Listen von Einnahme und Ausgaben,
+# Fügen Sie ein Modul main hinzu, die die Funktionalität des Programms testet, indem Sie Listen von Einnahme und Ausgaben,
 # sowie ein Budget erstellt und überprüft ob die Ausgaben im Budget liegen und einen Finanzbericht generieren
 # Paketreferenzen und Abhängigkeiten
 #  Sie benötigen folgende Abhängigkeiten zwischen den Modulen:
