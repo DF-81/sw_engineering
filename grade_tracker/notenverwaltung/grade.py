@@ -1,3 +1,4 @@
+import re # Handle date serialization and validation
 from dataclasses import dataclass
 from notenverwaltung.student import Student
 from notenverwaltung.course import Course
@@ -11,11 +12,18 @@ class Grade:
     notes: str = ""
 
     def __post_init__(self) -> None:
-        self.score = float(self.score)
-
         """Validates the reached score against the course limits."""
+        # Convert score to float for consistency
+        self.score = float(self.score)
+        
+        # Validate the grade score
         if self.score < 0.0 or self.score > self.course.max_grade:
             raise ValueError("Score must be between 0.0 and course max grade")
+
+        # Validate the date format (YYYY-MM-DD)
+        iso_date_pattern = r"^\d{4}-\d{2}-\d{2}$"
+        if not re.match(iso_date_pattern, self.date):
+            raise ValueError("Date must be in valid ISO format (YYYY-MM-DD)")
 
     @property
     def is_passing(self) -> bool:
@@ -40,3 +48,13 @@ class Grade:
         if pct >= 60.0:
             return "D"
         return "F"
+    
+    def __str__(self) -> str:
+        """Gives the required, readable string representation back."""
+        status = "PASSED" if self.is_passing else "FAILED"
+        return (
+            f"Grade: {self.student.full_name} | "
+            f"{self.course.name} | "
+            f"Score: {self.score}/{self.course.max_grade} ({self.letter_grade}) | "
+            f"[{status}]"
+        )
