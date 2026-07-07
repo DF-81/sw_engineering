@@ -3,24 +3,24 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# --- Virtuelle Umgebungen (Virtual Environments) ---
+# --- Virtual Environments ---
 .venv/
 venv/
 ENV/
 env/
 
-# --- Sensible Daten & Konfigurationen (z.B. API-Keys) ---
+# --- Sensitive Data & configurationen (z.B. API-Keys) ---
 .env
 *.env
 secrets.json
 
-# --- IDEs und Editoren ---
+# --- IDEs and Editors ---
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# --- Distribution & Pakete (falls Sie Bibliotheken bauen) ---
+# --- Distribution & Packages (for using libraries) ---
 build/
 develop-eggs/
 dist/
