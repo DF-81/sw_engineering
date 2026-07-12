@@ -152,10 +152,10 @@ class GradeBook:
     @classmethod
     def from_dict(cls, data: dict) -> "GradeBook":
         """Create a fully functional GradeBook object from a dictionary."""
-        # 1. Frische GradeBook-Instanz erstellen
+        # 1. Create a fresh GradeBook instance
         gradebook = cls()
         
-        # 2. Studenten wiederherstellen
+        # 2. Rebuild students
         for s_data in data.get("students", {}).values():
             student = Student(
                 student_id=s_data["student_id"],
@@ -165,7 +165,7 @@ class GradeBook:
             )
             gradebook.add_student(student)
             
-        # 3. Kurse wiederherstellen
+        # 3. Rebuild courses
         for c_data in data.get("courses", {}).values():
             course = Course(
                 course_id=c_data["course_id"],
@@ -175,7 +175,7 @@ class GradeBook:
             )
             gradebook.add_course(course)
             
-        # 4. Noten wiederherstellen und sauber verknüpfen
+        # 4. Rebuild grades and link them properly
         for g_data in data.get("grades", []):
             gradebook.record_grade(
                 student_id=g_data["student_id"],
@@ -196,7 +196,7 @@ class GradeBook:
         # Get data using our to_dict() method
         data = self.to_dict()
         
-        # Datei schreiben (mit UTF-8 für deutsche Umlaute und indent=4 für Lesbarkeit)
+        # Write file (with UTF-8 for german vowel mutations and indent=4 for better readability)
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
 
@@ -211,7 +211,7 @@ class GradeBook:
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
             
-        # Nutzen Sie unsere fertige from_dict() Methode für den Wiederaufbau
+        # Using the from_dict() method for reconstruction
         return cls.from_dict(data)
 
     # Implementation of the import_grades_from_csv method for robust mass import of grades
@@ -232,7 +232,8 @@ class GradeBook:
 
         for index, line in enumerate(lines):
             line = line.strip()
-            if not line or "student_id" in line: # Skip Header-Row or empty lines
+            # Skip Header-Row or empty lines
+            if not line or "student_id" in line: 
                 continue
 
             match = csv_pattern.match(line)
