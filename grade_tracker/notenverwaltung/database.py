@@ -138,7 +138,7 @@ class GradeDatabase:
             grade = Grade(student=student, course=course, score=row["score"], date=row["date"], notes=row["notes"])
             grades_list.append(grade)
             
-        return grades_lists
+        return grades_list
     
     def close(self) -> None:
         """Closes the database connection."""
