@@ -1,3 +1,5 @@
+import json
+from pathlib import Path
 import re
 from dataclasses import dataclass, field
 from notenverwaltung.student import Student
@@ -115,3 +117,168 @@ class GradeBook:
         """Searches for courses via regex in their name."""
         pattern = re.compile(query, re.IGNORECASE)
         return [c for c in self.courses.values() if pattern.search(c.name)]
+
+        # Implementation of the to_dict and from_dict methods for JSON serialization and deserialization
+    def to_dict(self) -> dict:
+        """Convert the whole GradeBook to a JSON-compatible Dictionary."""
+        return {
+            "students": {
+                s_id: {
+                    "student_id": s.student_id,
+                    "first_name": s.first_name,
+                    "last_name": s.last_name,
+                    "email": s.email
+                } for s_id, s in self.students.items()
+            },
+            "courses": {
+                c_id: {
+                    "course_id": c.course_id,
+                    "name": c.name,
+                    "max_grade": c.max_grade,
+                    "passing_grade": c.passing_grade
+                } for c_id, c in self.courses.items()
+            },
+            "grades": [
+                {
+                    "student_id": g.student.student_id,
+                    "course_id": g.course.course_id,
+                    "score": g.score,
+                    "date": g.date,
+                    "notes": g.notes
+                } for g in self.grades
+            ]
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "GradeBook":
+        """Create a fully functional GradeBook object from a dictionary."""
+        # 1. Frische GradeBook-Instanz erstellen
+        gradebook = cls()
+        
+        # 2. Studenten wiederherstellen
+        for s_data in data.get("students", {}).values():
+            student = Student(
+                student_id=s_data["student_id"],
+                first_name=s_data["first_name"],
+                last_name=s_data["last_name"],
+                email=s_data["email"]
+            )
+            gradebook.add_student(student)
+            
+        # 3. Kurse wiederherstellen
+        for c_data in data.get("courses", {}).values():
+            course = Course(
+                course_id=c_data["course_id"],
+                name=c_data["name"],
+                max_grade=c_data["max_grade"],
+                passing_grade=c_data["passing_grade"]
+            )
+            gradebook.add_course(course)
+            
+        # 4. Noten wiederherstellen und sauber verknüpfen
+        for g_data in data.get("grades", []):
+            gradebook.record_grade(
+                student_id=g_data["student_id"],
+                course_id=g_data["course_id"],
+                score=g_data["score"],
+                date=g_data["date"],
+                notes=g_data["notes"]
+            )
+            
+        return gradebook
+
+    # Implementation of the save_to_json and load_from_json methods for file persistence
+    def save_to_json(self, filepath: str | Path) -> None:
+        """Save the entire GradeBook as a formatted JSON text to the hard drive."""
+        # Ensure we have a Path object
+        path = Path(filepath)
+        
+        # Get data using our to_dict() method
+        data = self.to_dict()
+        
+        # Datei schreiben (mit UTF-8 für deutsche Umlaute und indent=4 für Lesbarkeit)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
+
+    @classmethod
+    def load_from_json(cls, filepath: str | Path) -> "GradeBook":
+        """Load a JSON file from the hard drive and reconstruct the GradeBook."""
+        path = Path(filepath)
+        
+        if not path.exists():
+            raise FileNotFoundError(f"The file {path} does not exist.")
+            
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            
+        # Nutzen Sie unsere fertige from_dict() Methode für den Wiederaufbau
+        return cls.from_dict(data)
+
+    # Implementation of the import_grades_from_csv method for robust mass import of grades
+    def import_grades_from_csv(self, filepath: str | Path) -> dict:
+        """Import grades from an existing CSV file and return an error report."""
+        path = Path(filepath)
+        if not path.exists():
+            raise FileNotFoundError(f"CSV file not found: {path}")
+
+        report = {"success_count": 0, "skipped_count": 0, "errors": []}
+
+        # Regex for a rough structure check of the line (4 comma-separated values)
+        # Expected: text,text,number,date(YYYY-MM-DD)
+        csv_pattern = re.compile(r"^([^,]+),([^,]+),([^,]+),(\d{4}-\d{2}-\d{2})$")
+
+        with open(path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+
+        for index, line in enumerate(lines):
+            line = line.strip()
+            if not line or "student_id" in line: # Skip Header-Row or empty lines
+                continue
+
+            match = csv_pattern.match(line)
+            if not match:
+                report["skipped_count"] += 1
+                report["errors"].append(f"Zeile {index + 1}: Ungültiges CSV-Format oder Datumsformat.")
+                continue
+
+            s_id, c_id, score_str, date_str = match.groups() # Extract values from Regex-Match
+
+            try:
+                # Convert int to float
+                score = float(score_str)
+                
+                # Registry grade (give ValueError, when s_id/c_id are missing od score is wrong)
+                self.record_grade(student_id=s_id, course_id=c_id, score=score, date=date_str)
+                report["success_count"] += 1
+                
+            except ValueError as e:
+                report["skipped_count"] += 1
+                report["errors"].append(f"Zeile {index + 1}: {str(e)}")
+
+        return report
+    
+    # Implementation of the export_grades_to_csv method for exporting grades to a CSV file
+    def export_grades_to_csv(self, filepath: str | Path) -> None:
+        """Export all saved grades in a standard CSV file."""
+        path = Path(filepath)
+        
+        with open(path, "w", encoding="utf-8") as f:
+            # 1. write Column Headers (Header)
+            f.write("student_id,course_id,score,date\n")
+            
+            # 2. write all grades line by line
+            for g in self.grades:
+                f.write(f"{g.student.student_id},{g.course.course_id},{g.score},{g.date}\n")
+
+    # Implementation of the export_grades_to_csv method for exporting grades to a CSV file
+    def export_grades_to_csv(self, filepath: str | Path) -> None:
+        """Export all saved values in a standard CSV file."""
+        path = Path(filepath)
+        
+        with open(path, "w", encoding="utf-8") as f:
+            # 1. write Column Headers (Header)
+            f.write("student_id,course_id,score,date\n")
+            
+            # 2. write All Grades Line by Line
+            for g in self.grades:
+                f.write(f"{g.student.student_id},{g.course.course_id},{g.score},{g.date}\n")
