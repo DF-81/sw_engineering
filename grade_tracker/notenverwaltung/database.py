@@ -77,7 +77,7 @@ class GradeDatabase:
     
     # Add methods for courses and grades here, similar to the student methods
     def add_course(self, course: Course) -> None:
-        """Fügt einen neuen Kurs in die Datenbank ein."""
+        """Add a new course to the database."""
         try:
             self._conn.execute(
                 "INSERT INTO courses (course_id, name, max_grade, passing_grade) VALUES (?, ?, ?, ?);",
@@ -102,7 +102,7 @@ class GradeDatabase:
         )
 
     def record_grade(self, grade: Grade) -> None:
-        """Speichert eine Note in der Datenbank. Prüft Foreign Keys via SQLite."""
+        """Save a grade in the database. Checks Foreign Keys via SQLite."""
         try:
             self._conn.execute(
                 "INSERT INTO grades (student_id, course_id, score, date, notes) VALUES (?, ?, ?, ?, ?);",
@@ -114,9 +114,9 @@ class GradeDatabase:
             raise ValueError("Student or Course does not exist in the database.")
 
     def get_student_grades(self, student_id: str) -> list[Grade]:
-        """Holt alle Noten eines Studenten und verknüpft sie mit den Objekten (SQL JOIN)."""
+        """Get all grades of a student and link them with the objects (SQL JOIN)."""
         cursor = self._conn.cursor()
-        # Wir nutzen ein SQL-JOIN, um alle Infos zu Student, Kurs und Note auf einmal zu laden
+        # SQL-JOIN to get all infos about Student, Course and Grade at once
         query = """
             SELECT g.score, g.date, g.notes,
                    s.student_id, s.first_name, s.last_name, s.email,
@@ -131,15 +131,14 @@ class GradeDatabase:
         
         grades_list = []
         for row in rows:
-            # Objekte rekonstruieren
+            # re-build Objects
             student = Student(row["student_id"], row["first_name"], row["last_name"], row["email"])
             course = Course(row["course_id"], row["course_name"], row["max_grade"], row["passing_grade"])
             # Note zusammenbauen
             grade = Grade(student=student, course=course, score=row["score"], date=row["date"], notes=row["notes"])
             grades_list.append(grade)
             
-        return grades_list
-
+        return grades_lists
     
     def close(self) -> None:
         """Closes the database connection."""
