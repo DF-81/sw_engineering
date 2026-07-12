@@ -7,7 +7,7 @@ class GradeDatabase:
     def __init__(self, db_path: str) -> None:
         """Initialization database connection with the specified path."""
         self.db_path = db_path
-        # Wir halten eine permanente Verbindung für die Lebensdauer dieses Objekts
+        # Hold a permanent connection for the lifetime of this object
         self._conn = sqlite3.connect(self.db_path)
         self._conn.execute("PRAGMA foreign_keys = ON;")
         self._conn.row_factory = sqlite3.Row
@@ -88,7 +88,7 @@ class GradeDatabase:
             raise ValueError(f"Course with ID {course.course_id} already exists.")
 
     def get_course(self, course_id: str) -> Course | None:
-        """Sucht einen Kurs anhand der ID und gibt ein Course-Objekt zurück."""
+        """Fetches a course by its ID and returns a Course object."""
         cursor = self._conn.cursor()
         cursor.execute("SELECT * FROM courses WHERE course_id = ?;", (course_id,))
         row = cursor.fetchone()
@@ -134,7 +134,7 @@ class GradeDatabase:
             # re-build Objects
             student = Student(row["student_id"], row["first_name"], row["last_name"], row["email"])
             course = Course(row["course_id"], row["course_name"], row["max_grade"], row["passing_grade"])
-            # Note zusammenbauen
+            # build grade
             grade = Grade(student=student, course=course, score=row["score"], date=row["date"], notes=row["notes"])
             grades_list.append(grade)
             
