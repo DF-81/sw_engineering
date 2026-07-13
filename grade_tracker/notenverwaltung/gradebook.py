@@ -83,7 +83,7 @@ class GradeBook:
         student_averages = []
         for student in self.students.values():
             avg = self.student_average(student.student_id)
-            # Laut Aufgabe zählen wir nur Studenten, die auch mindestens eine Note haben
+            # According to the task, we only count students who have at least one grade
             if self.get_student_grades(student.student_id):
                 student_averages.append((student, avg))
                 
@@ -91,16 +91,34 @@ class GradeBook:
         sorted_students = sorted(student_averages, key=lambda x: x[1], reverse=True)
         return sorted_students[:n]
 
+    #def students_at_risk(self, threshold: float = 60.0) -> list[Student]:
+    #    """Return a list of students whose average is below the threshold."""
+    #    at_risk = []
+    #    for student in self.students.values(): # Only for students with grades
+    #        if self.get_student_grades(student.student_id):
+    #            avg = self.student_average(student.student_id)
+    #            if avg < threshold:
+    #                at_risk.append(student)
+    #    return at_risk*/
+    
+    # Optimized version of the students_at_risk method using a single line condition
     def students_at_risk(self, threshold: float = 60.0) -> list[Student]:
         """Return a list of students whose average is below the threshold."""
         at_risk = []
-        for student in self.students.values(): # Only for students with grades
-            if self.get_student_grades(student.student_id):
-                avg = self.student_average(student.student_id)
-                if avg < threshold:
-                    at_risk.append(student)
+        for student in self.students.values():
+            # Both conditions are combined with 'and' in a single line
+            if self.get_student_grades(student.student_id) and self.student_average(student.student_id) < threshold:
+                at_risk.append(student)
         return at_risk
     
+    # Optimized list comprehension version of the students_at_risk method
+    #def students_at_risk(self, threshold: float = 60.0) -> list[Student]:
+    #    """Return a list of students whose average is below the threshold."""
+    #    return [
+    #        s for s in self.students.values()
+    #        if self.get_student_grades(s.student_id) and self.student_average(s.student_id) < threshold
+    #    ]
+
     # Regex search methods
     def search_students(self, query: str) -> list[Student]:
         """Searches for students via regex in their full name or email."""
