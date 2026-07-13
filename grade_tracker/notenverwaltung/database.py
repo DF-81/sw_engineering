@@ -110,7 +110,7 @@ class GradeDatabase:
             )
             self._conn.commit()
         except sqlite3.IntegrityError:
-            # Wird geworfen, wenn die foreign key Einschränkung verletzt wird
+            # Will raise ValueError when foreign key constraint is violated
             raise ValueError("Student or Course does not exist in the database.")
 
     def get_student_grades(self, student_id: str) -> list[Grade]:
