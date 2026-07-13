@@ -8,7 +8,7 @@ class GradeDatabase:
         """Initialization database connection with the specified path."""
         self.db_path = db_path
         # Hold a permanent connection for the lifetime of this object
-        self._conn = sqlite3.connect(self.db_path)
+        self._conn = sqlite3.connect(self.db_path, check_same_thread=False) # add check_same_thread=False to allow multi-threaded access
         self._conn.execute("PRAGMA foreign_keys = ON;")
         self._conn.row_factory = sqlite3.Row
 
