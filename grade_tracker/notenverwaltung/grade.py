@@ -41,11 +41,11 @@ class Grade:
         pct = self.percentage
         if pct >= 90.0:
             return "A"
-        if pct >= 80.0:
+        elif pct >= 80.0:
             return "B"
-        if pct >= 70.0:
+        elif pct >= 70.0:
             return "C"
-        if pct >= 60.0:
+        elif pct >= 60.0:
             return "D"
         return "F"
     
