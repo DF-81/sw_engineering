@@ -1,5 +1,5 @@
 import pytest
-from notenverwaltung.course import Course
+from notenverwaltung.models.course import Course
 
 def test_course_creation_valid_with_defaults():
     """Validates if course object is created with default values correctly."""

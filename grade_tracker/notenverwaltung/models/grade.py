@@ -1,7 +1,7 @@
 import re # Handle date serialization and validation
 from dataclasses import dataclass
-from notenverwaltung.student import Student
-from notenverwaltung.course import Course
+from notenverwaltung.models.student import Student
+from notenverwaltung.models.course import Course
 
 @dataclass
 class Grade:

@@ -1,7 +1,7 @@
 import pytest
-from notenverwaltung.student import Student
-from notenverwaltung.course import Course
-from notenverwaltung.grade import Grade
+from notenverwaltung.models.student import Student
+from notenverwaltung.models.course import Course
+from notenverwaltung.models.grade import Grade
 
 @pytest.fixture
 def sample_data():

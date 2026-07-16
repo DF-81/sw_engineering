@@ -1,19 +1,19 @@
 import sqlite3
+from notenverwaltung.storage.base import GradeStore
 from notenverwaltung.models.student import Student
 from notenverwaltung.models.course import Course
 from notenverwaltung.models.grade import Grade
 
-class GradeDatabase:
+class SqliteGradeStore(GradeStore):
+    """SQLite backend wrapping database operations according to Phase 4, Step 3."""
     def __init__(self, db_path: str) -> None:
-        """Initialization database connection with the specified path."""
         self.db_path = db_path
-        # Hold a permanent connection for the lifetime of this object
-        self._conn = sqlite3.connect(self.db_path, check_same_thread=False) # add check_same_thread=False to allow multi-threaded access
+        self._conn = sqlite3.connect(self.db_path, check_same_thread=False)
         self._conn.execute("PRAGMA foreign_keys = ON;")
         self._conn.row_factory = sqlite3.Row
+        self.create_schema()
 
     def create_schema(self) -> None:
-        """Creates the database schema."""
         self._conn.execute("""
             CREATE TABLE IF NOT EXISTS students (
                 student_id TEXT PRIMARY KEY,
@@ -22,8 +22,6 @@ class GradeDatabase:
                 email TEXT NOT NULL
             );
         """)
-
-        # 2. Table for courses
         self._conn.execute("""
             CREATE TABLE IF NOT EXISTS courses (
                 course_id TEXT PRIMARY KEY,
@@ -32,8 +30,6 @@ class GradeDatabase:
                 passing_grade REAL NOT NULL DEFAULT 50.0
             );
         """)
-        
-        # Table for grades
         self._conn.execute("""
             CREATE TABLE IF NOT EXISTS grades (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -49,7 +45,6 @@ class GradeDatabase:
         self._conn.commit()
 
     def add_student(self, student: Student) -> None:
-        """Adds a new student to the database."""
         try:
             self._conn.execute(
                 "INSERT INTO students (student_id, first_name, last_name, email) VALUES (?, ?, ?, ?);",
@@ -60,24 +55,14 @@ class GradeDatabase:
             raise ValueError(f"Student with ID {student.student_id} already exists.")
 
     def get_student(self, student_id: str) -> Student | None:
-        """Fetches a student by their ID and returns a Student object."""
         cursor = self._conn.cursor()
         cursor.execute("SELECT * FROM students WHERE student_id = ?;", (student_id,))
         row = cursor.fetchone()
-            
         if row is None:
             return None
-                
-        return Student(
-            student_id=row["student_id"],
-            first_name=row["first_name"],
-            last_name=row["last_name"],
-            email=row["email"]
-        )
-    
-    # Add methods for courses and grades here, similar to the student methods
+        return Student(row["student_id"], row["first_name"], row["last_name"], row["email"])
+
     def add_course(self, course: Course) -> None:
-        """Add a new course to the database."""
         try:
             self._conn.execute(
                 "INSERT INTO courses (course_id, name, max_grade, passing_grade) VALUES (?, ?, ?, ?);",
@@ -88,21 +73,14 @@ class GradeDatabase:
             raise ValueError(f"Course with ID {course.course_id} already exists.")
 
     def get_course(self, course_id: str) -> Course | None:
-        """Fetches a course by its ID and returns a Course object."""
         cursor = self._conn.cursor()
         cursor.execute("SELECT * FROM courses WHERE course_id = ?;", (course_id,))
         row = cursor.fetchone()
         if row is None:
             return None
-        return Course(
-            course_id=row["course_id"],
-            name=row["name"],
-            max_grade=row["max_grade"],
-            passing_grade=row["passing_grade"]
-        )
+        return Course(row["course_id"], row["name"], row["max_grade"], row["passing_grade"])
 
     def record_grade(self, grade: Grade) -> None:
-        """Save a grade in the database. Checks Foreign Keys via SQLite."""
         try:
             self._conn.execute(
                 "INSERT INTO grades (student_id, course_id, score, date, notes) VALUES (?, ?, ?, ?, ?);",
@@ -110,15 +88,12 @@ class GradeDatabase:
             )
             self._conn.commit()
         except sqlite3.IntegrityError:
-            # Will raise ValueError when foreign key constraint is violated
             raise ValueError("Student or Course does not exist in the database.")
 
     def get_student_grades(self, student_id: str) -> list[Grade]:
-        """Get all grades of a student and link them with the objects (SQL JOIN)."""
         cursor = self._conn.cursor()
-        # SQL-JOIN to get all infos about Student, Course and Grade at once
         query = """
-            SELECT g.score, g.date, g.notes,
+            SELECT g.id AS grade_id, g.score, g.date, g.notes,
                    s.student_id, s.first_name, s.last_name, s.email,
                    c.course_id, c.name AS course_name, c.max_grade, c.passing_grade
             FROM grades g
@@ -131,15 +106,33 @@ class GradeDatabase:
         
         grades_list = []
         for row in rows:
-            # re-build Objects
             student = Student(row["student_id"], row["first_name"], row["last_name"], row["email"])
             course = Course(row["course_id"], row["course_name"], row["max_grade"], row["passing_grade"])
-            # build grade
             grade = Grade(student=student, course=course, score=row["score"], date=row["date"], notes=row["notes"])
             grades_list.append(grade)
-            
         return grades_list
-    
+
+    def get_course_grades(self, course_id: str) -> list[Grade]:
+        cursor = self._conn.cursor()
+        query = """
+            SELECT g.id AS grade_id, g.score, g.date, g.notes,
+                   s.student_id, s.first_name, s.last_name, s.email,
+                   c.course_id, c.name AS course_name, c.max_grade, c.passing_grade
+            FROM grades g
+            JOIN students s ON g.student_id = s.student_id
+            JOIN courses c ON g.course_id = c.course_id
+            WHERE g.course_id = ?;
+        """
+        cursor.execute(query, (course_id,))
+        rows = cursor.fetchall()
+        
+        grades_list = []
+        for row in rows:
+            student = Student(row["student_id"], row["first_name"], row["last_name"], row["email"])
+            course = Course(row["course_id"], row["course_name"], row["max_grade"], row["passing_grade"])
+            grade = Grade(student=student, course=course, score=row["score"], date=row["date"], notes=row["notes"])
+            grades_list.append(grade)
+        return grades_list
+
     def close(self) -> None:
-        """Closes the database connection."""
         self._conn.close()

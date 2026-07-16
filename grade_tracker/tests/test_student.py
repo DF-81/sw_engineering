@@ -1,5 +1,5 @@
 import pytest
-from notenverwaltung.student import Student
+from notenverwaltung.models.student import Student
 
 def test_student_creation_valid():
     """Validates if an regular student is created correctly."""

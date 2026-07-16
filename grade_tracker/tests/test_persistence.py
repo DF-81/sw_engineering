@@ -1,11 +1,11 @@
 import pytest
-from notenverwaltung.student import Student
-from notenverwaltung.course import Course
+from notenverwaltung.models.student import Student
+from notenverwaltung.models.course import Course
 from notenverwaltung.gradebook import GradeBook
 
 def test_json_round_trip():
     """Check if a GradeBook can export in a dict and import again without issues."""
-    # 1. Setup mit Testdaten
+    # 1. Setup with Testdatas
     gb = GradeBook()
     s1 = Student("S1", "Daniel", "Mustermann", "daniel@example.com")
     c1 = Course("C1", "Python Basics")
@@ -16,16 +16,16 @@ def test_json_round_trip():
     # 2. Export to Dictionary
     data_dict = gb.to_dict()
     
-    # Kurzer Check, ob die Struktur im Dict stimmt
+    # Quick check if the structure in the dict is correct
     assert "students" in data_dict
     assert "courses" in data_dict
     assert "grades" in data_dict
     assert data_dict["students"]["S1"]["first_name"] == "Daniel"
     
-    # 3. Import aus dem Dictionary in ein NEUES GradeBook
+    # 3. Import from the dictionary into a new GradeBook
     new_gb = GradeBook.from_dict(data_dict)
     
-    # 4. Überprüfung, ob das neue GradeBook exakt dieselben Daten enthält
+    # 4. Check if the new GradeBook contains exactly the same data
     assert "S1" in new_gb.students
     assert new_gb.students["S1"].full_name == "Daniel Mustermann"
     assert "C1" in new_gb.courses
@@ -71,7 +71,7 @@ def test_import_grades_from_csv(tmp_path):
 
 # Add test for export_grades_to_csv method
 def test_export_grades_to_csv(tmp_path):
-    """Prüft, ob die Noten korrekt in eine CSV-Datei exportiert werden."""
+    """Check if grades are correctly exported to a CSV file."""
     gb = GradeBook()
     s1 = Student("S1", "Daniel", "Mustermann", "daniel@example.com")
     c1 = Course("C1", "Python Basics")
@@ -81,11 +81,11 @@ def test_export_grades_to_csv(tmp_path):
 
     output_file = tmp_path / "grades_export.csv"
     
-    # Export aufrufen
+    # Call the export method
     gb.export_grades_to_csv(output_file)
     assert output_file.exists()
 
-    # Inhalt der Datei prüfen
+    # Verify the content of the file
     content = output_file.read_text(encoding="utf-8")
     lines = content.strip().split("\n")
     

@@ -1,8 +1,8 @@
 import pytest
-from notenverwaltung.student import Student
-from notenverwaltung.course import Course
+from notenverwaltung.models.student import Student
+from notenverwaltung.models.course import Course
 from notenverwaltung.gradebook import GradeBook
-from notenverwaltung.reports import TextReportGenerator, CsvReportGenerator
+from notenverwaltung.reports.base import TextReportGenerator, CsvReportGenerator
 
 @pytest.fixture
 def sample_gradebook():
